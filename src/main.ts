@@ -1,16 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const corsAllowOrigin = process.env.CORS_ALLOW_ORIGIN || 'http://localhost:3001';
+
+  // This enables automatic validation of incoming data based on DTOs.
+  app.useGlobalPipes(new ValidationPipe());
+
+  // Use the environment variable for production, fallback to the local frontend URL.
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+
   app.enableCors({
-    origin: corsAllowOrigin,
+    origin: frontendUrl,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  console.log(corsAllowOrigin);
-  await app.listen(process.env.PORT ?? 3000);
+
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
